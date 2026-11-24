@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Notification App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f5ff;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .container {
+            background: white;
+            max-width: 500px;
+            margin: auto;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px #ccc;
+        }
+
+        input,
+        textarea {
+            width: 90%;
+            padding: 12px;
+            margin: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        button {
+            padding: 10px 18px;
+            background: #4b65d1;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .notification {
+            background: #eef1ff;
+            padding: 12px;
+            margin: 12px 0;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .delete {
+            background: #e34d4d;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <h1>Notification App</h1>
+
+        <input type="text" id="title" placeholder="Enter notification title">
+
+        <textarea id="message" placeholder="Enter notification message"></textarea>
+
+        <button onclick="addNotification()">Send Notification</button>
+
+        <h2>All Notifications</h2>
+        <div id="notifications"></div>
+    </div>
+
+    <script>
+        async function loadNotifications() {
+            const response = await fetch("/notifications");
+            const data = await response.json();
+
+            const container = document.getElementById("notifications");
+            container.innerHTML = "";
+
+            data.forEach(item => {
+                container.innerHTML += `
+                <div class="notification">
+                    <h3>${item.title}</h3>
+                    <p>${item.message}</p>
+                    <button class="delete"
+                    onclick="deleteNotification('${item._id}')">
+                    Delete
+                    </button>
+                </div>
+            `;
+            });
+        }
+
+        async function addNotification() {
+            const title = document.getElementById("title").value;
+            const message = document.getElementById("message").value;
+
+            if (!title || !message) {
+                alert("Please enter both fields");
+                return;
+            }
+
+            await fetch("/notifications", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ title, message })
+            });
+
+            document.getElementById("title").value = "";
+            document.getElementById("message").value = "";
+
+            loadNotifications();
+        }
+
+        async function deleteNotification(id) {
+            await fetch("/notifications/" + id, {
+                method: "DELETE"
+            });
+
+            loadNotifications();
+        }
+
+        loadNotifications();
+    </script>
+
+</body>
+
+</html>
